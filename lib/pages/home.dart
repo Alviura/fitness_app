@@ -1,7 +1,8 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, sized_box_for_whitespace
 
 import 'package:fitness_app/models/category_model.dart';
 import 'package:fitness_app/models/diet_model.dart';
+import 'package:fitness_app/models/popular_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -10,6 +11,7 @@ class HomePage extends StatelessWidget {
 
   List<CategoryModel> categories = [];
   List<DietModel> diet = [];
+  List<PopularModel> popular = [];
 
   void _getCategories() {
     categories = CategoryModel.getCategories();
@@ -19,10 +21,15 @@ class HomePage extends StatelessWidget {
     diet = DietModel.getData();
   }
 
+  void _getPopular() {
+    popular = PopularModel.getData();
+  }
+
   @override
   Widget build(BuildContext context) {
     _getCategories();
     _getDiet();
+    _getPopular();
     return Scaffold(
         appBar: appbar(),
         body: ListView(
@@ -39,6 +46,68 @@ class HomePage extends StatelessWidget {
             ),
             _recommendationSection(),
             SizedBox(height: 40),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 20.0),
+                  child: Text('Popular',
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 18)),
+                ),
+                SizedBox(height: 15),
+                ListView.separated(
+                  padding: EdgeInsets.only(left: 20, right: 20),
+                  shrinkWrap:
+                      true, // have to specify this to avoid the widget from filling up the entire scrollable space because it is nested under another scrollable widget
+                  separatorBuilder: (context, index) => SizedBox(height: 20),
+                  itemCount: popular.length,
+                  itemBuilder: (context, index) {
+                    return Container(
+                        height: 115,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                                color: Color(0xff1D1617).withOpacity(0.07),
+                                offset: Offset(0, 10),
+                                blurRadius: 40,
+                                spreadRadius: 0)
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(left: 20.0),
+                              child: SvgPicture.asset(popular[index].iconPath,
+                                  width: 55, height: 55),
+                            ),
+                            SizedBox(width: 20),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(popular[index].name,
+                                    style: TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 16)),
+                                Text(
+                                  '${popular[index].level} \n${popular[index].calories}',
+                                  style: TextStyle(color: Colors.black54),
+                                )
+                              ],
+                            )
+                          ],
+                        ));
+                  },
+                )
+              ],
+            )
           ],
         ));
   }
@@ -57,12 +126,14 @@ class HomePage extends StatelessWidget {
         ),
         SizedBox(height: 15),
         Container(
+            // main continer
             height: 240,
             child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 padding: EdgeInsets.only(left: 20, right: 20),
                 itemBuilder: (context, index) {
                   return Container(
+                      // creates two containers
                       width: 210,
                       decoration: BoxDecoration(
                           color: diet[index].boxColor.withOpacity(0.3),
@@ -70,7 +141,8 @@ class HomePage extends StatelessWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          SvgPicture.asset(diet[index].iconPath),
+                          SvgPicture.asset(diet[index]
+                              .iconPath), // icons in the recommendation section
                           Column(
                             children: [
                               Text(
@@ -81,11 +153,7 @@ class HomePage extends StatelessWidget {
                                     fontSize: 16),
                               ),
                               Text(
-                                diet[index].level +
-                                    ' | ' +
-                                    diet[index].meal +
-                                    ' |\n' +
-                                    diet[index].calories,
+                                '${diet[index].level}\n${diet[index].calories}',
                                 style: TextStyle(
                                   color: Colors.black54,
                                 ),
@@ -95,6 +163,16 @@ class HomePage extends StatelessWidget {
                           Container(
                             height: 45,
                             width: 130,
+                            decoration: BoxDecoration(
+                                gradient: LinearGradient(colors: [
+                                  diet[index].viewIsSelected
+                                      ? Color(0xff9DCEFF)
+                                      : Colors.transparent,
+                                  diet[index].viewIsSelected
+                                      ? Color(0xff92A3FD)
+                                      : Colors.transparent
+                                ]),
+                                borderRadius: BorderRadius.circular(50)),
                             child: Center(
                               child: Text(
                                 'View',
@@ -106,16 +184,6 @@ class HomePage extends StatelessWidget {
                                     fontSize: 14),
                               ),
                             ),
-                            decoration: BoxDecoration(
-                                gradient: LinearGradient(colors: [
-                                  diet[index].viewIsSelected
-                                      ? Color(0xff9DCEFF)
-                                      : Colors.transparent,
-                                  diet[index].viewIsSelected
-                                      ? Color(0xff92A3FD)
-                                      : Colors.transparent
-                                ]),
-                                borderRadius: BorderRadius.circular(50)),
                           )
                         ],
                       ));
